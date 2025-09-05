@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Мини-Советник</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+    h1 { text-align: center; }
+    input { width: 70%; padding: 8px; margin-right: 5px; }
+    button { padding: 8px; }
+    .card { background: white; padding: 10px; margin: 10px 0; border-radius: 8px; }
+    .category { font-size: 0.8em; color: gray; }
+  </style>
+</head>
+<body>
+
+<h1>🌍 Мини-Советник</h1>
+
+<div style="text-align:center;">
+  <input id="search" placeholder="Найди совет...">
+  <button onclick="searchTips()">Сброс</button>
+</div>
+
+<div id="results"></div>
+
+<script>
+  const tips = [
+    { category: "Здоровье", text: "Пейте 6–8 стаканов воды в день." },
+    { category: "Финансы", text: "Сначала платите себе: откладывайте хотя бы 10% дохода." },
+    { category: "Психология", text: "Сделайте 5 глубоких вдохов и выдохов при стрессе." },
+    { category: "Быт", text: "Сода + уксус отлично чистят раковину." },
+    { category: "Факт-чек", text: "Проверяйте новости на официальных сайтах и крупных СМИ." }
+  ];
+
+  function searchTips() {
+    const query = document.getElementById('search').value.toLowerCase();
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+
+    const filtered = tips.filter(tip =>
+      tip.text.toLowerCase().includes(query) || tip.category.toLowerCase().includes(query)
+    );
+
+    if (filtered.length === 0) {
+      resultsDiv.innerHTML = '<p style="text-align:center;">Советов пока нет 😔</p>';
+    }
+
+    filtered.forEach(tip => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `<p class="category">${tip.category}</p><p>${tip.text}</p>`;
+      resultsDiv.appendChild(div);
+    });
+  }
+
+  // Показываем все советы при загрузке
+  searchTips();
+</script>
+
+</body>
+</html>
