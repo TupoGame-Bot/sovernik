@@ -1,117 +1,147 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Мини-Советник с кнопками</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
-    h1 { text-align: center; }
-    input { width: 60%; padding: 8px; margin-right: 5px; }
-    button { padding: 8px 12px; margin: 2px; border: none; border-radius: 5px; cursor: pointer; }
-    .card { background: white; padding: 10px; margin: 10px 0; border-radius: 8px; }
-    .category { font-size: 0.8em; color: gray; }
-    .buttons { text-align: center; margin: 15px 0; }
-    .category-btn { background-color: #4CAF50; color: white; }
-    .reset-btn { background-color: #f44336; color: white; }
-  </style>
+<meta charset="UTF-8">
+<title>Мини-Советник 🌍 Глобальная версия</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; margin:0; }
+h1 { text-align: center; }
+input { width: 60%; padding: 8px; margin: 5px 0; }
+button { padding: 8px 12px; margin: 2px; border: none; border-radius: 5px; cursor: pointer; }
+.card { padding: 12px; margin: 10px 0; border-radius: 10px; color: white; }
+.category { font-size: 0.8em; }
+.buttons, .add-tip { text-align: center; margin: 15px 0; }
+.reset-btn { background-color: #f44336; color: white; }
+input[type=text] { width: 60%; padding:8px; }
+@media(max-width:600px){ input { width: 90%; } }
+</style>
 </head>
 <body>
 
 <h1>🌍 Мини-Советник</h1>
 
+<div class="buttons" id="categoryButtons"></div>
+
 <div style="text-align:center;">
-  <input id="search" placeholder="Найди совет...">
-  <button class="reset-btn" onclick="searchTips()">Сброс</button>
+<input id="search" placeholder="Найди совет...">
+<button class="reset-btn" onclick="searchTips()">Сброс</button>
 </div>
 
-<div class="buttons" id="categoryButtons"></div>
+<div class="add-tip">
+<input type="text" id="newTipText" placeholder="Напиши свой совет">
+<select id="newTipCategory">
+  <option>Здоровье</option>
+  <option>Финансы</option>
+  <option>Психология</option>
+  <option>Быт</option>
+  <option>Факт-чек</option>
+  <option>Обучение</option>
+  <option>Работа</option>
+  <option>Экология</option>
+</select>
+<button onclick="addTip()">Добавить совет</button>
+</div>
+
+<h2 style="text-align:center;">💡 Совет дня</h2>
+<div id="tipOfDay" class="card"></div>
 
 <div id="results"></div>
 
 <script>
-  const tips = [
-    // Здоровье
-    { category: "Здоровье", text: "Пейте 6–8 стаканов воды в день." },
-    { category: "Здоровье", text: "Спите хотя бы 7–8 часов каждую ночь." },
-    { category: "Здоровье", text: "Делайте разминку каждые 1–2 часа работы за компьютером." },
-    { category: "Здоровье", text: "При простуде отдых и тепло важнее лекарств." },
+let tips = [
+  // Здоровье
+  { category: "Здоровье", text: "Пейте 6–8 стаканов воды в день." },
+  { category: "Здоровье", text: "Спите 7–8 часов каждую ночь." },
+  { category: "Здоровье", text: "Делайте разминку каждые 1–2 часа работы за компьютером." },
+  // Финансы
+  { category: "Финансы", text: "Откладывайте хотя бы 10% дохода сразу после зарплаты." },
+  { category: "Финансы", text: "Создавайте бюджет на месяц и отслеживайте траты." },
+  // Психология
+  { category: "Психология", text: "Сделайте 5 глубоких вдохов при стрессе." },
+  { category: "Психология", text: "Записывайте мысли в дневник — помогает разгрести эмоции." },
+  // Быт
+  { category: "Быт", text: "Сода + уксус отлично чистят раковину." },
+  // Факт-чек
+  { category: "Факт-чек", text: "Проверяйте новости на официальных сайтах и крупных СМИ." },
+  // Обучение
+  { category: "Обучение", text: "Учите новые слова ежедневно — понемногу, но регулярно." },
+  // Работа
+  { category: "Работа", text: "Используйте технику Pomodoro: 25 минут работы, 5 минут перерыв." },
+  // Экология
+  { category: "Экология", text: "Выключайте свет и приборы, когда не используете." }
+];
 
-    // Финансы
-    { category: "Финансы", text: "Откладывайте хотя бы 10% дохода сразу после зарплаты." },
-    { category: "Финансы", text: "Создавайте бюджет на месяц и отслеживайте траты." },
-    { category: "Финансы", text: "Сравнивайте цены перед покупкой крупных вещей." },
+// Цвета категорий
+const categoryColors = {
+  "Здоровье":"#4CAF50",
+  "Финансы":"#2196F3",
+  "Психология":"#FF9800",
+  "Быт":"#9C27B0",
+  "Факт-чек":"#607D8B",
+  "Обучение":"#3F51B5",
+  "Работа":"#795548",
+  "Экология":"#009688"
+};
 
-    // Психология
-    { category: "Психология", text: "Сделайте 5 глубоких вдохов при стрессе." },
-    { category: "Психология", text: "Записывайте мысли в дневник — помогает разгрести эмоции." },
-    { category: "Психология", text: "Улыбка даже фальшивая улучшает настроение." },
+// Кнопки категорий
+const categories = [...new Set(tips.map(t => t.category))];
+const categoryButtonsDiv = document.getElementById('categoryButtons');
+categories.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.textContent = cat;
+  btn.style.backgroundColor = categoryColors[cat];
+  btn.onclick = () => showCategory(cat);
+  categoryButtonsDiv.appendChild(btn);
+});
 
-    // Быт
-    { category: "Быт", text: "Сода + уксус отлично чистят раковину." },
-    { category: "Быт", text: "Ставьте вещи на свои места, чтобы меньше терять время." },
-    { category: "Быт", text: "Замачивайте пятна сразу — легче отстирать." },
+// Поиск
+function searchTips() {
+  const query = document.getElementById('search').value.toLowerCase();
+  showTips(tips.filter(tip => tip.text.toLowerCase().includes(query) || tip.category.toLowerCase().includes(query)));
+}
 
-    // Факт-чек
-    { category: "Факт-чек", text: "Проверяйте новости на официальных сайтах и крупных СМИ." },
-    { category: "Факт-чек", text: "Сравнивайте несколько источников перед тем, как верить информации." },
+// Показ по категории
+function showCategory(category) {
+  document.getElementById('search').value='';
+  showTips(tips.filter(t => t.category === category));
+}
 
-    // Обучение
-    { category: "Обучение", text: "Учите новые слова и термины ежедневно — понемногу, но регулярно." },
-    { category: "Обучение", text: "Повторение ключевых моментов помогает запомнить материал." },
-    { category: "Обучение", text: "Старайтесь объяснять материал другим — лучше усваивается." },
-
-    // Работа/Продуктивность
-    { category: "Работа", text: "Используйте технику Pomodoro: 25 минут работы, 5 минут перерыв." },
-    { category: "Работа", text: "Составляйте список задач на день и отмечайте выполненные." },
-    { category: "Работа", text: "Начинайте день с самой важной задачи — легче продвигаются дела." },
-
-    // Экология/Планета
-    { category: "Экология", text: "Выключайте свет и приборы, когда не используете." },
-    { category: "Экология", text: "Разделяйте мусор — переработка помогает планете." },
-    { category: "Экология", text: "Используйте сумку вместо пластиковых пакетов." }
-  ];
-
-  const categories = [...new Set(tips.map(tip => tip.category))];
-
-  const categoryButtonsDiv = document.getElementById('categoryButtons');
-  categories.forEach(cat => {
-    const btn = document.createElement('button');
-    btn.className = 'category-btn';
-    btn.textContent = cat;
-    btn.onclick = () => showCategory(cat);
-    categoryButtonsDiv.appendChild(btn);
+// Показ советов
+function showTips(list) {
+  const resultsDiv = document.getElementById('results');
+  resultsDiv.innerHTML='';
+  if(list.length===0){ resultsDiv.innerHTML='<p style="text-align:center;">Советов пока нет 😔</p>'; return; }
+  list.forEach(tip=>{
+    const div = document.createElement('div');
+    div.className='card';
+    div.style.backgroundColor = categoryColors[tip.category] || '#333';
+    div.innerHTML=`<p class="category">${tip.category}</p><p>${tip.text}</p>`;
+    resultsDiv.appendChild(div);
   });
+}
 
-  function searchTips() {
-    const query = document.getElementById('search').value.toLowerCase();
-    showTips(tips.filter(tip =>
-      tip.text.toLowerCase().includes(query) || tip.category.toLowerCase().includes(query)
-    ));
-  }
+// Совет дня
+function showTipOfDay() {
+  const tip = tips[Math.floor(Math.random()*tips.length)];
+  const div = document.getElementById('tipOfDay');
+  div.style.backgroundColor = categoryColors[tip.category] || '#333';
+  div.innerHTML = `<p class="category">${tip.category}</p><p>${tip.text}</p>`;
+}
 
-  function showCategory(category) {
-    document.getElementById('search').value = '';
-    showTips(tips.filter(tip => tip.category === category));
-  }
-
-  function showTips(list) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '';
-
-    if (list.length === 0) {
-      resultsDiv.innerHTML = '<p style="text-align:center;">Советов пока нет 😔</p>';
-    }
-
-    list.forEach(tip => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `<p class="category">${tip.category}</p><p>${tip.text}</p>`;
-      resultsDiv.appendChild(div);
-    });
-  }
-
-  // Показываем все советы при загрузке
+// Добавление своего совета
+function addTip() {
+  const text = document.getElementById('newTipText').value.trim();
+  const category = document.getElementById('newTipCategory').value;
+  if(!text){ alert('Введите текст совета'); return; }
+  tips.push({category,text});
+  document.getElementById('newTipText').value='';
   showTips(tips);
+  alert('Совет добавлен! Он будет виден до перезагрузки страницы.');
+}
+
+// Инициализация
+showTips(tips);
+showTipOfDay();
 </script>
 
 </body>
